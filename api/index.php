@@ -1,9 +1,7 @@
 <?php
 
-// 1. Muat Autoloader dari Composer
 require __DIR__ . '/../vendor/autoload.php';
 
-// 2. Tentukan direktori temporary & file SQLite di Serverless Vercel
 $storagePath = '/tmp/storage';
 $viewsPath = '/tmp/storage/framework/views';
 $sessionsPath = '/tmp/storage/framework/sessions';
@@ -20,12 +18,16 @@ if (!file_exists($cachePath)) {
     mkdir($cachePath, 0777, true);
 }
 
-$isNewDb = !file_exists($dbPath);
-if ($isNewDb) {
-    touch($dbPath);
+// Copy file database.sqlite dari folder database project jika di /tmp belum ada
+if (!file_exists($dbPath)) {
+    $sourceDb = __DIR__ . '/../database/database.sqlite';
+    if (file_exists($sourceDb)) {
+        copy($sourceDb, $dbPath);
+    } else {
+        touch($dbPath);
+    }
 }
 
-// 3. Set Environment Variables wajib
 putenv("VIEW_COMPILED_PATH={$viewsPath}");
 $_ENV['VIEW_COMPILED_PATH'] = $viewsPath;
 $_SERVER['VIEW_COMPILED_PATH'] = $viewsPath;
@@ -42,28 +44,9 @@ putenv("SESSION_DRIVER=file");
 $_ENV['SESSION_DRIVER'] = 'file';
 $_SERVER['SESSION_DRIVER'] = 'file';
 
-// 4. Inisialisasi aplikasi Laravel
 $app = require __DIR__ . '/../bootstrap/app.php';
 $app->useStoragePath($storagePath);
 
-// 5. Jalankan Migration & Seeder otomatis hanya jika DB baru dibuat
-if ($isNewDb) {
-    try {
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
-            '--force' => true,
-            '--seed' => true
-        ]);
-    } catch (\Throwable $e) {
-        // Fallback jika seeder error, tetap jalankan migrasi dasar
-        try {
-            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        } catch (\Throwable $ex) {
-            // Silence error
-        }
-    }
-}
-
-// 6. Tangani HTTP Request
 $request = Illuminate\Http\Request::capture();
 $response = $app->handleRequest($request);
 $response->send();
