@@ -118,7 +118,7 @@
                 <!-- Branding & Logo Bulat (Tanpa Bayangan Glow) -->
                 <div class="flex items-center gap-4">
                     <a href="{{ route('dashboard') }}" class="group flex items-center gap-3.5">
-                        <img src="{{ asset('images/logo-c7.jpeg') }}" alt="Logo Cisarua 7" class="w-12 h-12 rounded-full object-cover border border-slate-700">
+                        <img src="{{ asset('images/logo-c7.jpeg') }}" alt="Logo Cisarua 7" class="w-auto h-10 rounded-full object-cover border border-slate-700">
 
                         <div>
                             <div class="flex items-center gap-2">

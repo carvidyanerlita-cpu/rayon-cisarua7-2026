@@ -18,7 +18,7 @@ if (!file_exists($cachePath)) {
     mkdir($cachePath, 0777, true);
 }
 
-// Copy file database.sqlite dari folder database project jika di /tmp belum ada
+// Copy database.sqlite dari repo ke /tmp jika belum ada
 if (!file_exists($dbPath)) {
     $sourceDb = __DIR__ . '/../database/database.sqlite';
     if (file_exists($sourceDb)) {
@@ -47,6 +47,9 @@ $_SERVER['SESSION_DRIVER'] = 'file';
 $app = require __DIR__ . '/../bootstrap/app.php';
 $app->useStoragePath($storagePath);
 
+// Penanganan Request yang aman untuk Laravel 10/11/12
+$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 $request = Illuminate\Http\Request::capture();
-$response = $app->handleRequest($request);
+$response = $kernel->handle($request);
 $response->send();
+$kernel->terminate($request, $response);
